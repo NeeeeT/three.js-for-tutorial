@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Three.js Example</title>
+    <script src="./js/stats.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r124/three.min.js" integrity="sha512-jeYvJdyAYkpQCY/omvCYQo89qA5YxDW4JBT7COPsHT2sOAanwxkZRFeP9gc69b5reSDpZIoyCqZQZcWZkbB5Gw==" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
     <style>
@@ -16,24 +17,64 @@
         .wrap{
             width: 100%;
             height: 100vh;
-            /* background-color: #666; */
             border: 5px solid orangered;
             overflow: hidden;
         }
+        /* #main-canvas{
+            width: 100%;
+            height: 100vh;
+        } */
     </style>
 </head>
 <body>
     <div class="wrap">
+        <canvas id="main-canvas"></canvas>
     </div>
 </body>
 <script>
-    let container = document.getElementsByClassName('wrap')[0];
+    let canvas = document.getElementById('main-canvas');//找到id為main-canvas的canvas物件
     let scene = new THREE.Scene();
     let camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-    let renderer = new THREE.WebGLRenderer();
+    let renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true,
+    });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor('#1a1a1a');
-    container.appendChild(renderer.domElement);
-    renderer.render(scene, camera);
+    renderer.setAnimationLoop(() => rendering());
+
+    let geometry = new THREE.BoxGeometry(1, 1, 1);
+    let material = new THREE.MeshBasicMaterial({color: '#fff'});
+    let cube = new THREE.Mesh(geometry, material);
+    let stats = new Stats();
+    camera.position.set(0, 0, -5);
+    camera.lookAt(cube.position);
+    scene.add(cube);
+
+    window.onresize = resizeCanvas;
+    createStats();
+
+    function createStats() {
+      stats.setMode(0);
+      stats.domElement.style.position = 'absolute';
+      stats.domElement.style.left = '5px';
+      stats.domElement.style.top = '5px';
+      document.body.appendChild(stats.domElement);
+    }
+    function rendering(){
+        renderer.render(scene, camera);
+        stats.update();
+        cube.rotation.y += 0.01;
+        cube.rotation.x += 0.01;
+        cube.material.color.r = Math.random() * 0.7;
+        cube.material.color.g = Math.random() * 0.7;
+        cube.material.color.b = Math.random() * 0.7;
+        
+    }
+    function resizeCanvas(){
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    }
 </script>
 </html>
